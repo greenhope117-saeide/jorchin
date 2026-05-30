@@ -24,7 +24,7 @@ body {
 
 .card {
   background: white;
-  max-width: 950px;
+  max-width: 1000px;
   width: 100%;
   border-radius: 35px;
   padding: 25px;
@@ -67,7 +67,7 @@ h1 {
 }
 
 .card-item {
-  aspect-ratio: 1 / 0.85;
+  aspect-ratio: 1 / 0.9;
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
   border-radius: 20px;
   display: flex;
@@ -75,7 +75,7 @@ h1 {
   justify-content: center;
   cursor: pointer;
   transition: all 0.25s ease;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
   padding: 10px;
@@ -94,8 +94,8 @@ h1 {
   background: #22c55e;
   color: white;
   cursor: default;
-  opacity: 0.6;
   pointer-events: none;
+  border: none;
 }
 
 .card-item.wrong-flip {
@@ -146,6 +146,7 @@ h1 {
   font-weight: 600;
   color: #0f766e;
   min-height: 50px;
+  font-size: 1rem;
 }
 
 .medal {
@@ -174,7 +175,7 @@ h1 {
     gap: 10px;
   }
   .card-item {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     padding: 6px;
   }
   .card {
@@ -195,12 +196,13 @@ h1 {
   <h1>🧩 زیست‌یار | جورچین</h1>
   <div class="designer">✨ طراح: خانم معصومه مرتجایی</div>
   <p style="margin: 10px 0;">کارت‌های موجودات را با نوع همزیستی درستشان جفت کنید.</p>
+  <p style="font-size: 0.85rem; color: #0f766e;">✨ دو کارت انتخاب کنید تا جفت درست را پیدا کنید ✨</p>
   <button class="btn" id="startBtn">شروع بازی</button>
 </div>
 
 <div id="gamePage" class="card hidden">
   <div class="school-name">🏫 مدرسه فرزانگان ۱ شهریار</div>
-  <div class="message" id="gameMessage">کارت‌ها را جفت کنید</div>
+  <div class="message" id="gameMessage">✨ دو کارت را انتخاب کنید ✨</div>
   <div class="grid" id="cardsGrid"></div>
   <div class="score-box">⭐ امتیاز: <span id="scoreVal" class="score-number">0</span></div>
   <button class="btn" id="resetGameBtn">🔄 بازی دوباره</button>
@@ -214,8 +216,7 @@ h1 {
 </div>
 
 <script>
-// ========== تعریف موجودات با نوع همزیستی ==========
-// هر موجود یک نوع دارد: "همیاری" یا "همسفرگی" یا "انگلی"
+// ========== موجودات ==========
 const creaturesData = [
   { name: "🐜 مورچه و شته", type: "همیاری" },
   { name: "🐝 زنبور و گل", type: "همیاری" },
@@ -229,20 +230,32 @@ const creaturesData = [
   { name: "🕷️ کنه و گاو", type: "انگلی" }
 ];
 
-// کارت‌های نوع (هر نوع فقط یک بار تکرار می‌شود)
-const typeCardsData = [
-  { name: "🤝 همیاری", type: "همیاری" },
-  { name: "🍽️ همسفرگی", type: "همسفرگی" },
-  { name: "🪱 انگلی", type: "انگلی" }
-];
+// ========== ساخت کارت‌های نوع ==========
+function buildTypeCards() {
+  let typeCards = [];
+  for (let i = 0; i < creaturesData.length; i++) {
+    const creature = creaturesData[i];
+    let displayName = "";
+    if (creature.type === "همیاری") displayName = "🤝 همیاری";
+    else if (creature.type === "همسفرگی") displayName = "🍽️ همسفرگی";
+    else displayName = "🪱 انگلی";
+    
+    typeCards.push({
+      id: i + 1000,
+      cardType: "type",
+      displayText: displayName,
+      creatureType: creature.type,
+      matched: false,
+      flipped: false
+    });
+  }
+  return typeCards;
+}
 
 let cards = [];
 let flippedCards = [];
-let matchedCreatures = [];    // نام موجودات جفت شده
-let matchedTypes = [];         // نوع‌های جفت شده
 let lockBoard = false;
 let currentScore = 0;
-let totalPairs = creaturesData.length;  // 10 جفت
 
 const goodMessages = ["🎉 عالی!", "🌟 آفرین!", "👍 درست!", "🎯 عالی جفت کردی!"];
 const badMessages = ["❌ اشتباه!", "🤔 دوباره تلاش کن", "🔄 این جفت درست نیست"];
@@ -335,20 +348,15 @@ function buildCards() {
       cardType: "creature",
       displayText: creaturesData[i].name,
       creatureType: creaturesData[i].type,
-      creatureName: creaturesData[i].name,
-      matched: false
+      matched: false,
+      flipped: false
     });
   }
   
-  // اضافه کردن کارت‌های نوع (3 کارت: همیاری، همسفرگی، انگلی)
-  for (let i = 0; i < typeCardsData.length; i++) {
-    newCards.push({
-      id: i + 100,
-      cardType: "type",
-      displayText: typeCardsData[i].name,
-      creatureType: typeCardsData[i].type,
-      matched: false
-    });
+  // اضافه کردن کارت‌های نوع
+  const typeCards = buildTypeCards();
+  for (let i = 0; i < typeCards.length; i++) {
+    newCards.push(typeCards[i]);
   }
   
   // تصادفی کردن
@@ -367,15 +375,17 @@ function renderBoard() {
     const card = cards[i];
     const cardDiv = document.createElement("div");
     cardDiv.className = "card-item";
+    
     if (card.matched) {
       cardDiv.classList.add("matched");
-      cardDiv.innerHTML = "✓";
+      cardDiv.innerHTML = card.displayText;
     } else if (card.flipped) {
       cardDiv.classList.add("flipped");
       cardDiv.innerHTML = card.displayText;
     } else {
       cardDiv.innerHTML = "❓";
     }
+    
     cardDiv.onclick = () => flipCard(i);
     grid.appendChild(cardDiv);
   }
@@ -401,11 +411,10 @@ function checkMatch() {
   const card1 = cards[flippedCards[0]];
   const card2 = cards[flippedCards[1]];
   
-  // شرط جفت درست: یکی کارت موجود باشد و دیگری کارت نوع، و نوع آنها یکی باشد
   const isMatch = (card1.cardType !== card2.cardType) && (card1.creatureType === card2.creatureType);
   
   if (isMatch) {
-    // جفت درست
+    // جفت درست - کارت‌ها سبز می‌شوند و رو می‌مانند (برنمی‌گردند)
     card1.matched = true;
     card2.matched = true;
     card1.flipped = false;
@@ -417,19 +426,20 @@ function checkMatch() {
     const goodMsg = goodMessages[Math.floor(Math.random() * goodMessages.length)];
     document.getElementById("gameMessage").innerHTML = `${goodMsg} +1 امتیاز`;
     setTimeout(() => {
-      document.getElementById("gameMessage").innerHTML = "کارت‌ها را جفت کنید";
-    }, 1000);
+      document.getElementById("gameMessage").innerHTML = "✨ دو کارت را انتخاب کنید ✨";
+    }, 1500);
     
     flippedCards = [];
     renderBoard();
     
-    // بررسی پایان بازی (همه موجودات جفت شده باشند)
-    const allCreaturesMatched = cards.filter(c => c.cardType === "creature" && !c.matched).length === 0;
-    if (allCreaturesMatched) {
+    // بررسی پایان بازی
+    const allMatched = cards.filter(c => !c.matched).length === 0;
+    if (allMatched) {
       setTimeout(() => finishGame(), 500);
     }
+    
   } else {
-    // جفت اشتباه
+    // جفت اشتباه - کارت‌ها برمی‌گردند (مخفی می‌شوند)
     lockBoard = true;
     const badMsg = badMessages[Math.floor(Math.random() * badMessages.length)];
     document.getElementById("gameMessage").innerHTML = badMsg;
@@ -445,8 +455,8 @@ function checkMatch() {
       flippedCards = [];
       renderBoard();
       lockBoard = false;
-      document.getElementById("gameMessage").innerHTML = "کارت‌ها را جفت کنید";
-    }, 800);
+      document.getElementById("gameMessage").innerHTML = "✨ دو کارت را انتخاب کنید ✨";
+    }, 1000);
   }
 }
 
@@ -454,7 +464,7 @@ function finishGame() {
   document.getElementById("gamePage").classList.add("hidden");
   document.getElementById("endPage").classList.remove("hidden");
   
-  const total = totalPairs;
+  const total = creaturesData.length;
   let medal = "🏆";
   let message = "";
   
@@ -483,7 +493,7 @@ function resetAndStart() {
   lockBoard = false;
   
   document.getElementById("scoreVal").innerText = "0";
-  document.getElementById("gameMessage").innerHTML = "کارت‌ها را جفت کنید";
+  document.getElementById("gameMessage").innerHTML = "✨ دو کارت را انتخاب کنید ✨";
   renderBoard();
 }
 
