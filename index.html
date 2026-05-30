@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>زیست‌یار | جورچین همزیستی</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0b1f3a, #0f766e);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  font-family: 'Vazirmatn', sans-serif;
+}
+
+.card {
+  background: white;
+  max-width: 950px;
+  width: 100%;
+  border-radius: 35px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.hidden {
+  display: none;
+}
+
+.school-name {
+  background: #e0f2fe;
+  padding: 8px 20px;
+  border-radius: 50px;
+  display: inline-block;
+  font-weight: 700;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: #1e3a5f;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+  color: #0b1f3a;
+}
+
+.designer {
+  color: #0f766e;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.card-item {
+  aspect-ratio: 1 / 0.85;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px;
+  color: white;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+.card-item.flipped {
+  background: white;
+  color: #0b1f3a;
+  border: 2px solid #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.3);
+}
+
+.card-item.matched {
+  background: #22c55e;
+  color: white;
+  cursor: default;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.card-item.wrong-flip {
+  background: #ef4444;
+  animation: shakeMatch 0.3s ease-in-out;
+}
+
+@keyframes shakeMatch {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 35px;
+  cursor: pointer;
+  background: #0ea5e9;
+  color: white;
+  transition: 0.1s;
+  margin-top: 10px;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.score-box {
+  background: #f1f5f9;
+  padding: 8px 25px;
+  border-radius: 40px;
+  margin-top: 15px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.score-number {
+  color: #0f766e;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.message {
+  margin: 10px 0;
+  font-weight: 600;
+  color: #0f766e;
+  min-height: 50px;
+}
+
+.medal {
+  font-size: 65px;
+  margin-bottom: 10px;
+}
+
+.music-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .card-item {
+    font-size: 0.75rem;
+    padding: 6px;
+  }
+  .card {
+    padding: 15px;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<button class="music-btn" id="musicToggleBtn">🔇</button>
+
+<div id="startPage" class="card">
+  <div class="school-name">🏫 مدرسه فرزانگان ۱ شهریار</div>
+  <h1>🧩 زیست‌یار | جورچین</h1>
+  <div class="designer">✨ طراح: خانم معصومه مرتجایی</div>
+  <p style="margin: 10px 0;">کارت‌های موجودات را با نوع همزیستی درستشان جفت کنید.</p>
+  <button class="btn" id="startBtn">شروع بازی</button>
+</div>
+
+<div id="gamePage" class="card hidden">
+  <div class="school-name">🏫 مدرسه فرزانگان ۱ شهریار</div>
+  <div class="message" id="gameMessage">کارت‌ها را جفت کنید</div>
+  <div class="grid" id="cardsGrid"></div>
+  <div class="score-box">⭐ امتیاز: <span id="scoreVal" class="score-number">0</span></div>
+  <button class="btn" id="resetGameBtn">🔄 بازی دوباره</button>
+</div>
+
+<div id="endPage" class="card hidden">
+  <div id="medalIcon" class="medal">🏆</div>
+  <h1>پایان بازی</h1>
+  <p id="endMsg" style="margin: 15px 0;"></p>
+  <button class="btn" id="restartFromEndBtn">بازی دوباره</button>
+</div>
+
+<script>
+// ========== تعریف موجودات با نوع همزیستی ==========
+// هر موجود یک نوع دارد: "همیاری" یا "همسفرگی" یا "انگلی"
+const creaturesData = [
+  { name: "🐜 مورچه و شته", type: "همیاری" },
+  { name: "🐝 زنبور و گل", type: "همیاری" },
+  { name: "🦐 میگوی تمیزکننده و کوسه", type: "همیاری" },
+  { name: "🍄 گلسنگ", type: "همیاری" },
+  { name: "🦠 باکتری روده و انسان", type: "همیاری" },
+  { name: "🦁 شیر و کفتار", type: "همسفرگی" },
+  { name: "🐟 ماهی کوچک و کوسه", type: "همسفرگی" },
+  { name: "🐢 لاک‌پشت و جلبک", type: "همسفرگی" },
+  { name: "🪱 کرمک و انسان", type: "انگلی" },
+  { name: "🕷️ کنه و گاو", type: "انگلی" }
+];
+
+// کارت‌های نوع (هر نوع فقط یک بار تکرار می‌شود)
+const typeCardsData = [
+  { name: "🤝 همیاری", type: "همیاری" },
+  { name: "🍽️ همسفرگی", type: "همسفرگی" },
+  { name: "🪱 انگلی", type: "انگلی" }
+];
+
+let cards = [];
+let flippedCards = [];
+let matchedCreatures = [];    // نام موجودات جفت شده
+let matchedTypes = [];         // نوع‌های جفت شده
+let lockBoard = false;
+let currentScore = 0;
+let totalPairs = creaturesData.length;  // 10 جفت
+
+const goodMessages = ["🎉 عالی!", "🌟 آفرین!", "👍 درست!", "🎯 عالی جفت کردی!"];
+const badMessages = ["❌ اشتباه!", "🤔 دوباره تلاش کن", "🔄 این جفت درست نیست"];
+
+// ========== موسیقی ==========
+let audioContext = null;
+let musicGain = null;
+let isMusicPlaying = false;
+let isMusicLooping = false;
+let currentNoteIndex = 0;
+
+const melodyNotes = [261.63, 293.66, 329.63, 261.63, 329.63, 293.66, 261.63, 392.00];
+const melodyDurations = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0];
+
+function initAudio() {
+  if (audioContext) return;
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  musicGain = audioContext.createGain();
+  musicGain.gain.value = 0.12;
+  musicGain.connect(audioContext.destination);
+}
+
+function playNextNote() {
+  if (!isMusicLooping || !audioContext) return;
+  const now = audioContext.currentTime;
+  const note = melodyNotes[currentNoteIndex];
+  const duration = melodyDurations[currentNoteIndex];
+  const osc = audioContext.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = note;
+  const noteGain = audioContext.createGain();
+  noteGain.gain.value = 0.1;
+  osc.connect(noteGain);
+  noteGain.connect(musicGain);
+  osc.start(now);
+  noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.stop(now + duration);
+  currentNoteIndex = (currentNoteIndex + 1) % melodyNotes.length;
+  const nextTime = now + duration;
+  const timeUntilNext = Math.max(0, (nextTime - audioContext.currentTime)) * 1000;
+  setTimeout(playNextNote, timeUntilNext);
+}
+
+function startMusic() {
+  if (!audioContext) initAudio();
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().then(() => {
+      isMusicLooping = true;
+      currentNoteIndex = 0;
+      playNextNote();
+      isMusicPlaying = true;
+      document.getElementById("musicToggleBtn").innerHTML = "🎵";
+    });
+  } else if (!isMusicLooping) {
+    isMusicLooping = true;
+    currentNoteIndex = 0;
+    playNextNote();
+    isMusicPlaying = true;
+    document.getElementById("musicToggleBtn").innerHTML = "🎵";
+  }
+}
+
+function stopMusic() {
+  isMusicLooping = false;
+  isMusicPlaying = false;
+  document.getElementById("musicToggleBtn").innerHTML = "🔇";
+}
+
+function toggleMusic() {
+  if (isMusicPlaying) stopMusic();
+  else startMusic();
+}
+
+function enableMusicOnFirstInteraction() {
+  if (!isMusicPlaying && audioContext && audioContext.state === 'suspended') {
+    startMusic();
+  }
+  document.removeEventListener('click', enableMusicOnFirstInteraction);
+  document.removeEventListener('touchstart', enableMusicOnFirstInteraction);
+}
+
+// ========== ساخت کارت‌ها ==========
+function buildCards() {
+  let newCards = [];
+  
+  // اضافه کردن کارت‌های موجودات
+  for (let i = 0; i < creaturesData.length; i++) {
+    newCards.push({
+      id: i,
+      cardType: "creature",
+      displayText: creaturesData[i].name,
+      creatureType: creaturesData[i].type,
+      creatureName: creaturesData[i].name,
+      matched: false
+    });
+  }
+  
+  // اضافه کردن کارت‌های نوع (3 کارت: همیاری، همسفرگی، انگلی)
+  for (let i = 0; i < typeCardsData.length; i++) {
+    newCards.push({
+      id: i + 100,
+      cardType: "type",
+      displayText: typeCardsData[i].name,
+      creatureType: typeCardsData[i].type,
+      matched: false
+    });
+  }
+  
+  // تصادفی کردن
+  for (let i = newCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newCards[i], newCards[j]] = [newCards[j], newCards[i]];
+  }
+  
+  return newCards;
+}
+
+function renderBoard() {
+  const grid = document.getElementById("cardsGrid");
+  grid.innerHTML = "";
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "card-item";
+    if (card.matched) {
+      cardDiv.classList.add("matched");
+      cardDiv.innerHTML = "✓";
+    } else if (card.flipped) {
+      cardDiv.classList.add("flipped");
+      cardDiv.innerHTML = card.displayText;
+    } else {
+      cardDiv.innerHTML = "❓";
+    }
+    cardDiv.onclick = () => flipCard(i);
+    grid.appendChild(cardDiv);
+  }
+}
+
+function flipCard(index) {
+  if (lockBoard) return;
+  if (cards[index].matched) return;
+  if (cards[index].flipped) return;
+  if (flippedCards.length >= 2) return;
+
+  cards[index].flipped = true;
+  renderBoard();
+
+  flippedCards.push(index);
+
+  if (flippedCards.length === 2) {
+    checkMatch();
+  }
+}
+
+function checkMatch() {
+  const card1 = cards[flippedCards[0]];
+  const card2 = cards[flippedCards[1]];
+  
+  // شرط جفت درست: یکی کارت موجود باشد و دیگری کارت نوع، و نوع آنها یکی باشد
+  const isMatch = (card1.cardType !== card2.cardType) && (card1.creatureType === card2.creatureType);
+  
+  if (isMatch) {
+    // جفت درست
+    card1.matched = true;
+    card2.matched = true;
+    card1.flipped = false;
+    card2.flipped = false;
+    
+    currentScore++;
+    document.getElementById("scoreVal").innerText = currentScore;
+    
+    const goodMsg = goodMessages[Math.floor(Math.random() * goodMessages.length)];
+    document.getElementById("gameMessage").innerHTML = `${goodMsg} +1 امتیاز`;
+    setTimeout(() => {
+      document.getElementById("gameMessage").innerHTML = "کارت‌ها را جفت کنید";
+    }, 1000);
+    
+    flippedCards = [];
+    renderBoard();
+    
+    // بررسی پایان بازی (همه موجودات جفت شده باشند)
+    const allCreaturesMatched = cards.filter(c => c.cardType === "creature" && !c.matched).length === 0;
+    if (allCreaturesMatched) {
+      setTimeout(() => finishGame(), 500);
+    }
+  } else {
+    // جفت اشتباه
+    lockBoard = true;
+    const badMsg = badMessages[Math.floor(Math.random() * badMessages.length)];
+    document.getElementById("gameMessage").innerHTML = badMsg;
+    
+    const grid = document.getElementById("cardsGrid");
+    const cardDivs = grid.children;
+    if (cardDivs[flippedCards[0]]) cardDivs[flippedCards[0]].classList.add("wrong-flip");
+    if (cardDivs[flippedCards[1]]) cardDivs[flippedCards[1]].classList.add("wrong-flip");
+    
+    setTimeout(() => {
+      cards[flippedCards[0]].flipped = false;
+      cards[flippedCards[1]].flipped = false;
+      flippedCards = [];
+      renderBoard();
+      lockBoard = false;
+      document.getElementById("gameMessage").innerHTML = "کارت‌ها را جفت کنید";
+    }, 800);
+  }
+}
+
+function finishGame() {
+  document.getElementById("gamePage").classList.add("hidden");
+  document.getElementById("endPage").classList.remove("hidden");
+  
+  const total = totalPairs;
+  let medal = "🏆";
+  let message = "";
+  
+  if (currentScore === total) {
+    medal = "🥇";
+    message = "🎉🌟 عالی! همه جفت‌ها را درست پیدا کردی! 🌟🎉";
+  } else if (currentScore >= total - 2) {
+    medal = "🥈";
+    message = "👏 خیلی خوب! موفق باشی! 👏";
+  } else if (currentScore >= total - 4) {
+    medal = "🥉";
+    message = "👍 خوب بود! می‌توانی بهتر شوی! 👍";
+  } else {
+    medal = "🌱";
+    message = "💪 آفرین! بیشتر تلاش کن، دفعه بعد بهتر میشه! 💪";
+  }
+  
+  document.getElementById("medalIcon").innerHTML = medal;
+  document.getElementById("endMsg").innerHTML = `امتیاز شما: ${currentScore} از ${total}<br><br>${message}`;
+}
+
+function resetAndStart() {
+  cards = buildCards();
+  flippedCards = [];
+  currentScore = 0;
+  lockBoard = false;
+  
+  document.getElementById("scoreVal").innerText = "0";
+  document.getElementById("gameMessage").innerHTML = "کارت‌ها را جفت کنید";
+  renderBoard();
+}
+
+function startGame() {
+  resetAndStart();
+  document.getElementById("startPage").classList.add("hidden");
+  document.getElementById("endPage").classList.add("hidden");
+  document.getElementById("gamePage").classList.remove("hidden");
+  enableMusicOnFirstInteraction();
+}
+
+// رویدادها
+document.getElementById("startBtn").onclick = startGame;
+document.getElementById("resetGameBtn").onclick = () => {
+  resetAndStart();
+  enableMusicOnFirstInteraction();
+};
+document.getElementById("restartFromEndBtn").onclick = () => {
+  startGame();
+};
+document.getElementById("musicToggleBtn").onclick = toggleMusic;
+
+initAudio();
+document.addEventListener('click', enableMusicOnFirstInteraction);
+document.addEventListener('touchstart', enableMusicOnFirstInteraction);
+</script>
+</body>
+</html>
